@@ -7,9 +7,9 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-/* AG Grid styles */
+/* AG Grid styles - Modern Quartz Theme */
 @import "ag-grid-community/styles/ag-grid.css";
-@import "ag-grid-community/styles/ag-theme-alpine.css";
+@import "ag-grid-community/styles/ag-theme-quartz.css";
 
 body {
   @apply bg-zinc-50 text-zinc-900 font-sans;

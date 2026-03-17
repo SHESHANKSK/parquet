@@ -6,6 +6,7 @@ import { ParquetService } from './core/services/parquet.service';
 import { UploadComponent } from './features/uploader/upload.component';
 import { SchemaComponent } from './features/schema-viewer/schema.component';
 import { TableComponent } from './features/table-viewer/table.component';
+import { SqlQueryComponent } from './features/sql-query/sql-query.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,7 +17,8 @@ import { TableComponent } from './features/table-viewer/table.component';
     MatIconModule, 
     UploadComponent, 
     SchemaComponent, 
-    TableComponent
+    TableComponent,
+    SqlQueryComponent
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -25,7 +27,7 @@ export class App {
   fileService = inject(FileService);
   parquetService = inject(ParquetService);
 
-  activeTab = signal<'data' | 'schema' | 'metadata'>('data');
+  activeTab = signal<'data' | 'sql' | 'schema' | 'metadata'>('data');
   fileInfo = signal<{ name: string; size: number } | null>(null);
 
   async onFileSelected(file: File) {

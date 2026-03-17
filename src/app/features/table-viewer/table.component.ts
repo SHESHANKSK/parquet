@@ -1,9 +1,11 @@
-import { Component, input, effect, signal } from '@angular/core';
+import { Component, input, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridReadyEvent, GridApi } from 'ag-grid-community';
+import { ColDef, GridReadyEvent, GridApi, IDatasource, IGetRowsParams } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { MatIconModule } from '@angular/material/icon';
+import { ParquetService } from '../../core/services/parquet.service';
+import { ParquetColumn } from '../../shared/models/parquet.model';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -12,7 +14,16 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   imports: [CommonModule, AgGridAngular, MatIconModule],
   template: `
     <div class="flex flex-col gap-4">
-      <div class="flex justify-end">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          @if (parquetService.isQueryMode()) {
+            <span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider rounded">Query Results</span>
+            <span class="text-xs text-zinc-500">{{ parquetService.queryResult()?.length || 0 }} rows found</span>
+          } @else {
+            <span class="px-2 py-1 bg-zinc-100 text-zinc-700 text-[10px] font-bold uppercase tracking-wider rounded">Full Dataset</span>
+            <span class="text-xs text-zinc-500">{{ parquetService.metadata()?.numRows || 0 }} total rows</span>
+          }
+        </div>
         <button 
           (click)="exportCsv()" 
           class="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 transition-all shadow-sm"
@@ -24,13 +35,13 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
       <div class="h-[600px] w-full bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm">
         <ag-grid-angular
-          class="ag-theme-alpine h-full w-full"
-          [rowData]="rowData()"
+          class="ag-theme-quartz h-full w-full"
           [columnDefs]="colDefs()"
           [defaultColDef]="defaultColDef"
-          [pagination]="true"
-          [paginationPageSize]="100"
-          [paginationPageSizeSelector]="[10, 50, 100, 500]"
+          [rowModelType]="'infinite'"
+          [cacheBlockSize]="100"
+          [maxBlocksInCache]="10"
+          [rowBuffer]="10"
           (gridReady)="onGridReady($event)"
         />
       </div>
@@ -38,8 +49,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   `
 })
 export class TableComponent {
-  rowData = input.required<Record<string, unknown>[]>();
   columns = input.required<ParquetColumn[]>();
+  parquetService = inject(ParquetService);
 
   private gridApi!: GridApi;
   colDefs = signal<ColDef[]>([]);
@@ -53,20 +64,61 @@ export class TableComponent {
   };
 
   constructor() {
+    // Handle column changes
     effect(() => {
-      const cols = this.columns();
+      const isQueryMode = this.parquetService.isQueryMode();
+      const cols = isQueryMode ? this.parquetService.queryColumns() : this.columns();
+      
       if (cols && cols.length > 0) {
         this.colDefs.set(cols.map(c => ({
           field: c.name,
           headerName: c.name,
           tooltipField: c.name
         })));
+        
+        // Refresh grid if columns change
+        if (this.gridApi) {
+          this.gridApi.setGridOption('columnDefs', this.colDefs());
+          this.gridApi.refreshInfiniteCache();
+        }
+      }
+    });
+
+    // Handle query result changes
+    effect(() => {
+      if (this.parquetService.isQueryMode() && this.gridApi) {
+        this.gridApi.refreshInfiniteCache();
       }
     });
   }
 
   onGridReady(params: GridReadyEvent) {
     this.gridApi = params.api;
+    
+    const datasource: IDatasource = {
+      getRows: async (params: IGetRowsParams) => {
+        try {
+          let rows: Record<string, unknown>[] = [];
+          let totalRows = -1;
+
+          if (this.parquetService.isQueryMode()) {
+            const queryResult = this.parquetService.queryResult() || [];
+            rows = queryResult.slice(params.startRow, params.endRow);
+            totalRows = queryResult.length;
+          } else {
+            rows = await this.parquetService.readRows(params.startRow, params.endRow);
+            totalRows = this.parquetService.metadata()?.numRows || -1;
+          }
+
+          params.successCallback(rows, totalRows);
+        } catch (error) {
+          console.error('Error fetching rows:', error);
+          params.failCallback();
+        }
+      }
+    };
+
+    this.gridApi.setGridOption('datasource', datasource);
     params.api.sizeColumnsToFit();
   }
 

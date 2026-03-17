@@ -61,6 +61,15 @@
             Data
           </button>
           <button 
+            (click)="activeTab.set('sql')"
+            [class.bg-white]="activeTab() === 'sql'"
+            [class.shadow-sm]="activeTab() === 'sql'"
+            [class.text-zinc-900]="activeTab() === 'sql'"
+            class="px-6 py-2 rounded-lg text-sm font-medium text-zinc-500 transition-all hover:text-zinc-700"
+          >
+            SQL
+          </button>
+          <button 
             (click)="activeTab.set('schema')"
             [class.bg-white]="activeTab() === 'schema'"
             [class.shadow-sm]="activeTab() === 'schema'"
@@ -85,12 +94,12 @@
           @if (parquetService.loading()) {
             <div class="flex flex-col items-center justify-center h-[600px] bg-white rounded-2xl border border-zinc-200">
               <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 mb-4"></div>
-              <p class="text-zinc-500 font-medium">Parsing Parquet data...</p>
+              <p class="text-zinc-500 font-medium">Processing data...</p>
             </div>
           } @else if (parquetService.error()) {
             <div class="flex flex-col items-center justify-center h-[600px] bg-red-50 rounded-2xl border border-red-100">
               <mat-icon class="text-red-500 scale-150 mb-4">error_outline</mat-icon>
-              <h3 class="text-lg font-bold text-red-900 mb-2">Parsing Error</h3>
+              <h3 class="text-lg font-bold text-red-900 mb-2">Error</h3>
               <p class="text-red-700">{{ parquetService.error() }}</p>
               <button (click)="reset()" class="mt-6 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                 Try Another File
@@ -100,9 +109,16 @@
             @switch (activeTab()) {
               @case ('data') {
                 <app-table-viewer 
-                  [rowData]="parquetService.data()" 
                   [columns]="parquetService.metadata()?.columns || []"
                 ></app-table-viewer>
+              }
+              @case ('sql') {
+                <div class="flex flex-col gap-6">
+                  <app-sql-query></app-sql-query>
+                  <app-table-viewer 
+                    [columns]="parquetService.metadata()?.columns || []"
+                  ></app-table-viewer>
+                </div>
               }
               @case ('schema') {
                 <app-schema-viewer 
