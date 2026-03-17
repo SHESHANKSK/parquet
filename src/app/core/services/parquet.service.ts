@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { parquetMetadata, parquetReadObjects, FileMetaData, AsyncBuffer } from 'hyparquet';
 import { ParquetMetadata, ParquetColumn } from '../../shared/models/parquet.model';
 
-declare const alasql: any;
+declare const alasql: (sql: string, params?: unknown[]) => unknown;
 
 @Injectable({
   providedIn: 'root'
@@ -91,11 +91,12 @@ export class ParquetService {
       const result = alasql(sql, [this.allRows]);
       
       if (Array.isArray(result)) {
-        this.queryResult.set(result as Record<string, unknown>[]);
+        const rows = result as Record<string, unknown>[];
+        this.queryResult.set(rows);
         
         // Infer columns from the first result row
-        if (result.length > 0) {
-          const firstRow = result[0];
+        if (rows.length > 0) {
+          const firstRow = rows[0];
           const cols: ParquetColumn[] = Object.keys(firstRow).map(key => ({
             name: key,
             type: typeof firstRow[key] === 'number' ? 'DOUBLE' : 'BYTE_ARRAY',

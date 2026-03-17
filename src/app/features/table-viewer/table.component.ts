@@ -2,7 +2,7 @@ import { Component, input, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridReadyEvent, GridApi, IDatasource, IGetRowsParams } from 'ag-grid-community';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
 import { MatIconModule } from '@angular/material/icon';
 import { ParquetService } from '../../core/services/parquet.service';
 import { ParquetColumn } from '../../shared/models/parquet.model';
@@ -35,7 +35,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
       <div class="h-[600px] w-full bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm">
         <ag-grid-angular
-          class="ag-theme-quartz h-full w-full"
+          class="h-full w-full"
+          [theme]="theme"
           [columnDefs]="colDefs()"
           [defaultColDef]="defaultColDef"
           [rowModelType]="'infinite'"
@@ -52,6 +53,7 @@ export class TableComponent {
   columns = input.required<ParquetColumn[]>();
   parquetService = inject(ParquetService);
 
+  theme = themeQuartz;
   private gridApi!: GridApi;
   colDefs = signal<ColDef[]>([]);
 
