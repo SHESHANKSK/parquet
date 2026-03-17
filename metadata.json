@@ -1,0 +1,5 @@
+{
+  "name": "Parquet Lens",
+  "description": "A high-performance, client-side Parquet file visualizer built with Angular and hyparquet.",
+  "requestFramePermissions": []
+}

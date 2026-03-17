@@ -1,0 +1,150 @@
+<div class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white border-b border-zinc-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center">
+        <mat-icon class="text-white">grid_view</mat-icon>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-tight text-zinc-900">Parquet Lens</h1>
+        <p class="text-xs text-zinc-500 font-mono uppercase tracking-widest">Client-side Visualizer</p>
+      </div>
+    </div>
+
+    @if (fileInfo()) {
+      <div class="flex items-center gap-4 bg-zinc-100 px-4 py-2 rounded-full border border-zinc-200">
+        <div class="flex flex-col">
+          <span class="text-xs font-medium text-zinc-900 truncate max-w-[200px]">{{ fileInfo()?.name }}</span>
+          <span class="text-[10px] text-zinc-500 font-mono">{{ formatSize(fileInfo()?.size || 0) }}</span>
+        </div>
+        <button (click)="reset()" class="text-zinc-400 hover:text-red-500 transition-colors">
+          <mat-icon class="scale-75">close</mat-icon>
+        </button>
+      </div>
+    }
+  </header>
+
+  <main class="flex-1 p-8 max-w-7xl mx-auto w-full">
+    @if (!parquetService.metadata()) {
+      <div class="max-w-2xl mx-auto mt-12">
+        <app-upload (fileSelected)="onFileSelected($event)"></app-upload>
+        
+        <div class="mt-12 grid grid-cols-3 gap-6">
+          <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+            <mat-icon class="text-zinc-400 mb-2">security</mat-icon>
+            <h4 class="text-sm font-semibold mb-1">Privacy First</h4>
+            <p class="text-xs text-zinc-500">Files are processed entirely in your browser. No data is uploaded to any server.</p>
+          </div>
+          <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+            <mat-icon class="text-zinc-400 mb-2">bolt</mat-icon>
+            <h4 class="text-sm font-semibold mb-1">High Speed</h4>
+            <p class="text-xs text-zinc-500">Powered by hyparquet for lightning-fast parsing of large datasets.</p>
+          </div>
+          <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
+            <mat-icon class="text-zinc-400 mb-2">layers</mat-icon>
+            <h4 class="text-sm font-semibold mb-1">Rich Schema</h4>
+            <p class="text-xs text-zinc-500">Explore complex nested structures and detailed column metadata.</p>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-6">
+        <!-- Tabs -->
+        <div class="flex gap-1 bg-zinc-200 p-1 rounded-xl w-fit">
+          <button 
+            (click)="activeTab.set('data')"
+            [class.bg-white]="activeTab() === 'data'"
+            [class.shadow-sm]="activeTab() === 'data'"
+            [class.text-zinc-900]="activeTab() === 'data'"
+            class="px-6 py-2 rounded-lg text-sm font-medium text-zinc-500 transition-all hover:text-zinc-700"
+          >
+            Data
+          </button>
+          <button 
+            (click)="activeTab.set('schema')"
+            [class.bg-white]="activeTab() === 'schema'"
+            [class.shadow-sm]="activeTab() === 'schema'"
+            [class.text-zinc-900]="activeTab() === 'schema'"
+            class="px-6 py-2 rounded-lg text-sm font-medium text-zinc-500 transition-all hover:text-zinc-700"
+          >
+            Schema
+          </button>
+          <button 
+            (click)="activeTab.set('metadata')"
+            [class.bg-white]="activeTab() === 'metadata'"
+            [class.shadow-sm]="activeTab() === 'metadata'"
+            [class.text-zinc-900]="activeTab() === 'metadata'"
+            class="px-6 py-2 rounded-lg text-sm font-medium text-zinc-500 transition-all hover:text-zinc-700"
+          >
+            Metadata
+          </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="min-h-[600px]">
+          @if (parquetService.loading()) {
+            <div class="flex flex-col items-center justify-center h-[600px] bg-white rounded-2xl border border-zinc-200">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 mb-4"></div>
+              <p class="text-zinc-500 font-medium">Parsing Parquet data...</p>
+            </div>
+          } @else if (parquetService.error()) {
+            <div class="flex flex-col items-center justify-center h-[600px] bg-red-50 rounded-2xl border border-red-100">
+              <mat-icon class="text-red-500 scale-150 mb-4">error_outline</mat-icon>
+              <h3 class="text-lg font-bold text-red-900 mb-2">Parsing Error</h3>
+              <p class="text-red-700">{{ parquetService.error() }}</p>
+              <button (click)="reset()" class="mt-6 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                Try Another File
+              </button>
+            </div>
+          } @else {
+            @switch (activeTab()) {
+              @case ('data') {
+                <app-table-viewer 
+                  [rowData]="parquetService.data()" 
+                  [columns]="parquetService.metadata()?.columns || []"
+                ></app-table-viewer>
+              }
+              @case ('schema') {
+                <app-schema-viewer 
+                  [columns]="parquetService.metadata()?.columns || []"
+                ></app-schema-viewer>
+              }
+              @case ('metadata') {
+                <div class="bg-white rounded-2xl border border-zinc-200 p-8 shadow-sm">
+                  <h3 class="text-xl font-bold mb-6">File Metadata</h3>
+                  <div class="grid grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                      <div>
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-1">Total Rows</span>
+                        <div class="text-2xl font-bold">{{ parquetService.metadata()?.numRows | number }}</div>
+                      </div>
+                      <div>
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-1">Row Groups</span>
+                        <div class="text-2xl font-bold">{{ parquetService.metadata()?.numRowGroups }}</div>
+                      </div>
+                    </div>
+                    <div class="space-y-4">
+                      <div>
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-1">Created By</span>
+                        <div class="text-sm font-mono bg-zinc-50 p-3 rounded border border-zinc-100 truncate">
+                          {{ parquetService.metadata()?.createdBy || 'Unknown' }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            }
+          }
+        </div>
+      </div>
+    }
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-zinc-200 px-8 py-4 text-center">
+    <p class="text-[10px] text-zinc-400 font-mono uppercase tracking-widest">
+      Parquet Lens &copy; 2026 &bull; Powered by hyparquet & ag-grid
+    </p>
+  </footer>
+</div>
