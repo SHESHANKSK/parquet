@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridReadyEvent, GridApi, IDatasource, IGetRowsParams } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
-import { MatIconModule } from '@angular/material/icon';
 import { ParquetService } from '../../core/services/parquet.service';
 import { ParquetColumn } from '../../shared/models/parquet.model';
 
@@ -11,39 +10,41 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-table-viewer',
-  imports: [CommonModule, AgGridAngular, MatIconModule],
+  imports: [CommonModule, AgGridAngular],
+  standalone: true,
   template: `
     <div class="flex flex-col gap-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           @if (parquetService.isQueryMode()) {
-            <span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider rounded">Query Results</span>
+            <span
+                class="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase tracking-wider rounded">Query Results</span>
             <span class="text-xs text-zinc-500">{{ parquetService.queryResult()?.length || 0 }} rows found</span>
           } @else {
             <span class="px-2 py-1 bg-zinc-100 text-zinc-700 text-[10px] font-bold uppercase tracking-wider rounded">Full Dataset</span>
             <span class="text-xs text-zinc-500">{{ parquetService.metadata()?.numRows || 0 }} total rows</span>
           }
         </div>
-        <button 
-          (click)="exportCsv()" 
-          class="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 transition-all shadow-sm"
+        <button
+            (click)="exportCsv()"
+            class="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-800 transition-all shadow-sm"
         >
-          <mat-icon class="scale-75">download</mat-icon>
+          <i class="scale-75">download</i>
           Export CSV
         </button>
       </div>
 
       <div class="h-[600px] w-full bg-white rounded-xl border border-zinc-200 overflow-hidden shadow-sm">
         <ag-grid-angular
-          class="h-full w-full"
-          [theme]="theme"
-          [columnDefs]="colDefs()"
-          [defaultColDef]="defaultColDef"
-          [rowModelType]="'infinite'"
-          [cacheBlockSize]="100"
-          [maxBlocksInCache]="10"
-          [rowBuffer]="10"
-          (gridReady)="onGridReady($event)"
+            class="h-full w-full"
+            [theme]="theme"
+            [columnDefs]="colDefs()"
+            [defaultColDef]="defaultColDef"
+            [rowModelType]="'infinite'"
+            [cacheBlockSize]="100"
+            [maxBlocksInCache]="10"
+            [rowBuffer]="10"
+            (gridReady)="onGridReady($event)"
         />
       </div>
     </div>

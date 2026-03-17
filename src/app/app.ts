@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
 import { FileService } from './core/services/file.service';
 import { ParquetService } from './core/services/parquet.service';
 import { UploadComponent } from './features/uploader/upload.component';
@@ -14,8 +13,7 @@ import { SqlQueryComponent } from './features/sql-query/sql-query.component';
   standalone: true,
   imports: [
     CommonModule, 
-    MatIconModule, 
-    UploadComponent, 
+    UploadComponent,
     SchemaComponent, 
     TableComponent,
     SqlQueryComponent

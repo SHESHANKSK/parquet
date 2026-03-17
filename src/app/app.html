@@ -1,9 +1,9 @@
-<div class="min-h-screen flex flex-col">
+<div class="min-h-screen flex flex-col min-w-screen">
   <!-- Header -->
   <header class="bg-white border-b border-zinc-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center">
-        <mat-icon class="text-white">grid_view</mat-icon>
+        <i class="text-white">grid_view</i>
       </div>
       <div>
         <h1 class="text-lg font-bold tracking-tight text-zinc-900">Parquet Lens</h1>
@@ -18,7 +18,7 @@
           <span class="text-[10px] text-zinc-500 font-mono">{{ formatSize(fileInfo()?.size || 0) }}</span>
         </div>
         <button (click)="reset()" class="text-zinc-400 hover:text-red-500 transition-colors">
-          <mat-icon class="scale-75">close</mat-icon>
+          <i class="scale-75">close</i>
         </button>
       </div>
     }
@@ -31,17 +31,17 @@
         
         <div class="mt-12 grid grid-cols-3 gap-6">
           <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-            <mat-icon class="text-zinc-400 mb-2">security</mat-icon>
+            <i class="text-zinc-400 mb-2">security</i>
             <h4 class="text-sm font-semibold mb-1">Privacy First</h4>
             <p class="text-xs text-zinc-500">Files are processed entirely in your browser. No data is uploaded to any server.</p>
           </div>
           <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-            <mat-icon class="text-zinc-400 mb-2">bolt</mat-icon>
+            <i class="text-zinc-400 mb-2">bolt</i>
             <h4 class="text-sm font-semibold mb-1">High Speed</h4>
             <p class="text-xs text-zinc-500">Powered by hyparquet for lightning-fast parsing of large datasets.</p>
           </div>
           <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-            <mat-icon class="text-zinc-400 mb-2">layers</mat-icon>
+            <i class="text-zinc-400 mb-2">layers</i>
             <h4 class="text-sm font-semibold mb-1">Rich Schema</h4>
             <p class="text-xs text-zinc-500">Explore complex nested structures and detailed column metadata.</p>
           </div>
@@ -98,7 +98,7 @@
             </div>
           } @else if (parquetService.error()) {
             <div class="flex flex-col items-center justify-center h-[600px] bg-red-50 rounded-2xl border border-red-100">
-              <mat-icon class="text-red-500 scale-150 mb-4">error_outline</mat-icon>
+              <i class="text-red-500 scale-150 mb-4">error_outline</i>
               <h3 class="text-lg font-bold text-red-900 mb-2">Error</h3>
               <p class="text-red-700">{{ parquetService.error() }}</p>
               <button (click)="reset()" class="mt-6 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
